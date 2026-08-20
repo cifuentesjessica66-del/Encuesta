@@ -1,62 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nice to meet you!</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f5f2eb; /* Fondo beige plano */
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-        }
-        .text-container {
-            text-align: center;
-            position: absolute;
-            z-index: 10;
-            pointer-events: none; /* Permite que los clics atraviesen el texto hacia el canvas */
-            padding: 20px;
-        }
-        h1 {
-            font-size: 32px;
-            color: #2c3e50;
-            margin-bottom: 12px;
-            line-height: 1.3;
-        }
-        p {
-            font-size: 18px;
-            color: #7f8c8d;
-            margin: 0;
-            letter-spacing: 0.5px;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
 
-    <div class="text-container">
-        <h1>Nice to meet you!<br>Now we know who you are.</h1>
-        <p>Click o a random spot</p>
-    </div>
-
-    <canvas id="confettiCanvas"></canvas>
-
-    <script>
         const canvas = document.getElementById('confettiCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -132,6 +74,3 @@
         }
 
         animate();
-    </script>
-</body>
-</html>
