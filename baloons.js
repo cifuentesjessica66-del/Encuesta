@@ -1,66 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revienta los Globos - Encuesta Finalizada</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f5f2eb; /* Fondo beige plano */
-            height: 100vh;
-            overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            user-select: none;
-        }
-        .text-container {
-            position: absolute;
-            top: 40px;
-            text-align: center;
-            z-index: 10;
-            pointer-events: none;
-            width: 100%;
-            padding: 0 20px;
-            box-sizing: border-box;
-        }
-        h1 {
-            font-size: 28px;
-            color: #2c3e50;
-            margin: 0;
-            line-height: 1.3;
-        }
-        p {
-            font-size: 16px;
-            color: #7f8c8d;
-            margin-top: 8px;
-            letter-spacing: 0.5px;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="text-container">
-        <h1>You've finished the survey.</h1>
-        <p>Pop the balloons</p>
-    </div>
-
-    <canvas id="balloonCanvas"></canvas>
-
-    <script>
-        const canvas = document.getElementById('balloonCanvas');
+   const canvas = document.getElementById('balloonCanvas');
         const ctx = canvas.getContext('2d');
 
         function resizeCanvas() {
@@ -218,6 +156,3 @@
         }
 
         animate();
-    </script>
-</body>
-</html>
