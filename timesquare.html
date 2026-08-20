@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Anuncios de Neón - Ciudad Amplia</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #0b0d10;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #centro {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            background: rgba(21, 25, 34, 0.9);
+            padding: 22px 28px;
+            border-radius: 12px;
+            color: white;
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            pointer-events: none;
+            backdrop-filter: blur(3px);
+        }
+        h1 { font-size: 16px; margin: 0 0 6px 0; }
+        p { font-size: 11px; color: #888; margin: 0; }
+        canvas {
+            display: block;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="centro">
+        <h1>Light up the advertisement.</h1>
+        <p>Click signs to give them physical impulse!</p>
+    </div>
+
+    <canvas id="lienzo"></canvas>
+
+    <script>
+        const canvas = document.getElementById('lienzo');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            inicializarCarteles();
+        }
+
+        let carteles = [];
+        let tiempo = 0;
+
+        function inicializarCarteles() {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            // Más carteles, más separados del centro, con tamaños muy variados (anchos, altos, cuadrados)
+            const baseCarteles = [
+                // Anillo superior más alejado
+                { offsetX: -260, offsetY: -220, w: 120, h: 40, color: '#ff0055', texto: 'NEON CLUB' },
+                { offsetX: -110, offsetY: -260, w: 90,  h: 60, color: '#00f0ff', texto: 'BAR' },
+                { offsetX: 60,   offsetY: -250, w: 140, h: 45, color: '#ffe600', texto: 'HOTEL 24H' },
+                { offsetX: 220,  offsetY: -210, w: 100, h: 50, color: '#cc00ff', texto: 'SHOPPING' },
+
+                // Anillo lateral izquierdo alejado
+                { offsetX: -320, offsetY: -120, w: 95,  h: 75, color: '#3498db', texto: 'TECH' },
+                { offsetX: -280, offsetY: -20,  w: 130, h: 40, color: '#00ffff', texto: 'CINEMA' },
+                { offsetX: -340, offsetY: 70,   w: 110, h: 55, color: '#00ff66', texto: 'SUPERMARKET'},
+                { offsetX: -270, offsetY: 160,  w: 80,  h: 80, color: '#ffff00', texto: 'TAXIS' },
+
+                // Anillo lateral derecho alejado
+                { offsetX: 240,  offsetY: -130, w: 120, h: 45, color: '#e91e63', texto: 'CAFE LATTE'},
+                { offsetX: 270,  offsetY: -30,  w: 90,  h: 70, color: '#ff6600', texto: 'PIZZA' },
+                { offsetX: 230,  offsetY: 80,   w: 135, h: 45, color: '#ff3366', texto: 'VIP LOUNGE' },
+                { offsetX: 280,  offsetY: 170,  w: 85,  h: 60, color: '#9900ff', texto: 'CASINO' },
+
+                // Anillo inferior más alejado
+                { offsetX: -220, offsetY: 220,  w: 110, h: 45, color: '#00ffcc', texto: 'OPEN 24H' },
+                { offsetX: -90,  offsetY: 250,  w: 125, h: 50, color: '#ff9900', texto: 'BURGER KING'},
+                { offsetX: 70,   offsetY: 240,  w: 95,  h: 40, color: '#ff00ff', texto: 'PUB' },
+                { offsetX: 190,  offsetY: 220,  w: 115, h: 55, color: '#33ccff', texto: 'GYM FITNESS'},
+
+                // Capa intermedia adicional para rellenar bien el espacio ampliado
+                { offsetX: -180, offsetY: -140, w: 70,  h: 90, color: '#ff3333', texto: 'AUTO' },
+                { offsetX: 130,  offsetY: -150, w: 80,  h: 80, color: '#33ff33', texto: 'RADIO' },
+                { offsetX: -190, offsetY: 110,  w: 100, h: 40, color: '#ffff33', texto: 'MUSIC' },
+                { offsetX: 140,  offsetY: 120,  w: 95,  h: 45, color: '#ff33cc', texto: 'DANCE' },
+                { offsetX: -300, offsetY: -200, w: 85,  h: 35, color: '#00ccff', texto: 'WIFI' },
+                { offsetX: 260,  offsetY: -210, w: 90,  h: 35, color: '#ccff00', texto: 'SPA' }
+            ];
+
+            carteles = baseCarteles.map(c => ({
+                x: cx + c.offsetX,
+                y: cy + c.offsetY,
+                origX: cx + c.offsetX,
+                origY: cy + c.offsetY,
+                vx: 0,
+                vy: 0,
+                w: c.w,
+                h: c.h,
+                color: c.color,
+                texto: c.texto,
+                encendido: false
+            }));
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Detectar clics con impulso físico individual
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            carteles.forEach(c => {
+                if (clickX >= c.x && clickX <= c.x + c.w && clickY >= c.y && clickY <= c.y + c.h) {
+                    c.encendido = !c.encendido;
+
+                    if (c.encendido) {
+                        const dx = (c.x + c.w / 2) - clickX;
+                        const dy = (c.y + c.h / 2) - clickY;
+                        c.vx = dx * 0.15;
+                        c.vy = -Math.abs(dy * 0.2) - 3;
+                    } else {
+                        c.x = c.origX;
+                        c.y = c.origY;
+                        c.vx = 0;
+                        c.vy = 0;
+                    }
+                }
+            });
+        });
+
+        function dibujar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            tiempo += 0.05;
+
+            carteles.forEach((c, index) => {
+                ctx.save();
+
+                if (c.encendido) {
+                    c.x += c.vx + Math.sin(tiempo + index) * 0.3;
+                    c.y += c.vy;
+
+                    c.vx *= 0.95;
+                    if (c.vy > -1.2) c.vy -= 0.05;
+
+                    if (c.y < -80) {
+                        c.y = canvas.height + 50;
+                        c.x = c.origX;
+                        c.vy = -1.2;
+                    }
+
+                    let brilloAnimado = 15 + Math.sin(tiempo * 2 + index) * 8;
+                    ctx.shadowColor = c.color;
+                    ctx.shadowBlur = Math.max(5, brilloAnimado);
+                    ctx.fillStyle = c.color;
+                } else {
+                    ctx.fillStyle = '#181b22';
+                }
+
+                ctx.beginPath();
+                ctx.roundRect(c.x, c.y, c.w, c.h, 6);
+                ctx.fill();
+
+                ctx.fillStyle = c.encendido ? '#ffffff' : '#333b4d';
+                ctx.font = 'bold 11px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(c.texto, c.x + c.w / 2, c.y + c.h / 2);
+
+                ctx.restore();
+            });
+
+            requestAnimationFrame(dibujar);
+        }
+
+        dibujar();
+    </script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Partículas de Neón - TABLET</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #0b0d10;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            user-select: none;
+        }
+        canvas {
+            display: block;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="lienzo"></canvas>
+
+    <script>
+        const canvas = document.getElementById('lienzo');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            generarParticulasTexto();
+        }
+
+        window.addEventListener('resize', resize);
+
+        let particulas = [];
+        let encendido = false;
+        
+        // Posición del mouse/tacto
+        let mouse = { x: null, y: null, activo: false };
+
+        function generarParticulasTexto() {
+            particulas = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar el texto temporalmente en un canvas oculto para extraer sus píxeles
+            const offScreenCanvas = document.createElement('canvas');
+            const offCtx = offScreenCanvas.getContext('2d');
+            offScreenCanvas.width = canvas.width;
+            offScreenCanvas.height = canvas.height;
+
+            offCtx.fillStyle = 'white';
+            offCtx.font = 'bold 14vw Arial'; // Tamaño grande adaptable
+            offCtx.textAlign = 'center';
+            offCtx.textBaseline = 'middle';
+            offCtx.fillText('TABLET', canvas.width / 2, canvas.height / 2);
+
+            const pixels = offCtx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+            // Escanear píxeles y crear partículas (saltando de 6 en 6 para rendimiento)
+            const paso = 6;
+            for (let y = 0; y < canvas.height; y += paso) {
+                for (let x = 0; x < canvas.width; x += paso) {
+                    const index = (y * canvas.width + x) * 4;
+                    if (pixels[index + 3] > 128) { // Si el píxel es visible
+                        // Asignar un color de neón basado en su posición horizontal
+                        const colores = ['#ff0055', '#00f0ff', '#ffe600', '#00ff66', '#cc00ff', '#3498db'];
+                        const colorAsignado = colores[Math.floor((x / canvas.width) * colores.length)];
+
+                        particulas.push({
+                            x: x,
+                            y: y,
+                            origX: x,
+                            origY: y,
+                            vx: 0,
+                            vy: 0,
+                            color: colorAsignado,
+                            size: 2.5
+                        });
+                    }
+                }
+            }
+        }
+
+        // Detectar interacción táctil / mouse
+        window.addEventListener('pointerdown', (e) => {
+            encendido = true; // Se enciende al primer toque
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            mouse.activo = true;
+        });
+
+        window.addEventListener('pointermove', (e) => {
+            if (mouse.activo) {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            }
+        });
+
+        window.addEventListener('pointerup', () => {
+            mouse.activo = false;
+        });
+
+        resize();
+
+        function animar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particulas.forEach(p => {
+                if (encendido) {
+                    // Si está encendido, intentan regresar suavemente a su posición original (creando la palabra)
+                    let dx = p.origX - p.x;
+                    let dy = p.origY - p.y;
+                    
+                    p.vx += dx * 0.03;
+                    p.vy += dy * 0.03;
+                    p.vx *= 0.85; // Fricción
+                    p.vy *= 0.85;
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Interacción física con el mouse / dedo si se está tocando
+                    if (mouse.activo) {
+                        let mDist = Math.hypot(mouse.x - p.x, mouse.y - p.y);
+                        if (mDist < 80) {
+                            let angulo = Math.atan2(p.y - mouse.y, p.x - mouse.x);
+                            let fuerza = (80 - mDist) * 0.4;
+                            p.x += Math.cos(angulo) * fuerza;
+                            p.y += Math.sin(angulo) * fuerza;
+                        }
+                    }
+
+                    // Renderizado de neón encendido
+                    ctx.shadowColor = p.color;
+                    ctx.shadowBlur = 12;
+                    ctx.fillStyle = p.color;
+                } else {
+                    // Apagado y gris
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#222831';
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animar);
+        }
+
+        animar();
+    </script>
+</body>
+</html>

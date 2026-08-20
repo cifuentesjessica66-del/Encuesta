@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nice to meet you!</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f2eb; /* Fondo beige plano */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+        .text-container {
+            text-align: center;
+            position: absolute;
+            z-index: 10;
+            pointer-events: none; /* Permite que los clics atraviesen el texto hacia el canvas */
+            padding: 20px;
+        }
+        h1 {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        p {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="text-container">
+        <h1>Nice to meet you!<br>Now we know who you are.</h1>
+        <p>Click o a random spot</p>
+    </div>
+
+    <canvas id="confettiCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('confettiCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Ajustar el canvas al tamaño de la pantalla
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let particles = [];
+        const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22', '#1abc9c', '#e91e63'];
+
+        // Función para crear confeti en una posición específica
+        function addConfetti(x, y) {
+            for (let i = 0; i < 45; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 7 + 2;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 3, // Impulso inicial hacia arriba
+                    size: Math.random() * 9 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    alpha: 1,
+                    decay: Math.random() * 0.015 + 0.01,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 12
+                });
+            }
+        }
+
+        // Eventos de clic y táctil (soporta múltiples toques en distintas zonas)
+        window.addEventListener('click', (e) => {
+            addConfetti(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('touchstart', (e) => {
+            for (let i = 0; i < e.touches.length; i++) {
+                addConfetti(e.touches[i].clientX, e.touches[i].clientY);
+            }
+        });
+
+        // Bucle de animación del confeti
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.25; // Efecto de gravedad
+                p.vx *= 0.98; // Fricción del aire
+                p.alpha -= p.decay;
+                p.rotation += p.rotationSpeed;
+
+                if (p.alpha <= 0 || p.y > canvas.height + 50) {
+                    particles.splice(i, 1);
+                } else {
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6); // Forma rectangular de confeti
+                    ctx.restore();
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
